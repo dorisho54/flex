@@ -368,7 +368,7 @@
       }
     }
 
-    // 新增：按下 GO 時的開場炫麗音效
+    // 按下 GO 時的開場音效
     function playStartGameSound() {
       playBeep(523.25, 'sine', 0.1);
       setTimeout(() => playBeep(587.33, 'sine', 0.1), 80);
@@ -484,7 +484,7 @@
         id: 10,
         title: "地板上的米香 (align-items)",
         instructions: "🔴 <b>紅大米</b> 掉在了廚房的最底部（交錯軸的終點）。請調整交錯軸的對齊，把小老鼠送到底部吃大米。",
-        hint: "提示：<code>align-items</code> 控制交錯軸上的對齊. 設定成 <code>flex-end</code> 會使元件對齊到交錯軸的最尾端。",
+        hint: "提示：<code>align-items</code> 控制交錯軸上的對齊。設定成 <code>flex-end</code> 會使元件對齊到交錯軸的最尾端。",
         mice: ['red'],
         defaultStyles: { 'align-items': 'flex-start' },
         correctStyles: { 'align-items': 'flex-end' },
@@ -506,7 +506,7 @@
         instructions: "這群老鼠的身高和肚子裡的名字（字體）尺寸完全不同！請找出一個對齊方式，讓牠們能夠以<b>文字內容的底部基準線</b>對齊大米。",
         hint: "提示：<code>align-items: baseline</code> 會依照元件內文字的底線（Baseline）進行精準對齊。注意看老鼠名牌的底部對齊效果！",
         mice: ['red', 'blue', 'green'],
-        miceHeights: ['py-2 text-xs', 'py-6 text-xl', 'py-4 text-base'], // 模擬不同高度/文字尺寸
+        miceHeights: ['py-2 text-xs', 'py-6 text-xl', 'py-4 text-base'], 
         defaultStyles: { 'align-items': 'flex-start' },
         correctStyles: { 'align-items': 'baseline' },
         availableProps: ['align-items']
@@ -517,7 +517,7 @@
         instructions: "好多老鼠呀！廚房寬度塞不下了。請啟動 <b>換行機制</b>，當老鼠超出寬度時自動換到下一行，對齊分佈在兩層的大米。",
         hint: "提示：預設的 <code>flex-wrap: nowrap</code> 會強擠在同一行。設定為 <code>wrap</code> 就能讓溢出的元件自動落到下一行！",
         mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
-        miceForceWidth: 'w-24', // 強制加寬以觸發折行
+        miceForceWidth: 'w-24 md:w-28', // 加寬以確保各解析度都能成功折行
         defaultStyles: { 'flex-wrap': 'nowrap' },
         correctStyles: { 'flex-wrap': 'wrap' },
         availableProps: ['flex-wrap']
@@ -528,7 +528,7 @@
         instructions: "大米滿出來並且折行了，但大米換行的位置竟然顛倒了——第一行被推到了下方，新的一行反而排在最上方！請使用換行反轉指令。",
         hint: "提示：<code>flex-wrap: wrap-reverse</code> 可以在換行時，讓新的一行出現在原本的上方（反向延伸）。",
         mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
-        miceForceWidth: 'w-24',
+        miceForceWidth: 'w-24 md:w-28',
         defaultStyles: { 'flex-wrap': 'nowrap' },
         correctStyles: { 'flex-wrap': 'wrap-reverse' },
         availableProps: ['flex-wrap']
@@ -589,7 +589,7 @@
         instructions: "恭喜來到最後一關！老鼠們數量極多會滿出來，且大米在直向上是反向排列的，同時滿出來的老鼠必須要往左側換行，且要垂直兩端分開。請用你最強的 Flexbox 技術解開這題！",
         hint: "提示：1. <code>column-reverse</code> 使老鼠垂直由下往上排列。 2. <code>wrap-reverse</code> 讓溢出的老鼠往交錯軸的反方向（左側）換行。 3. <code>justify-content: space-between</code> 使上下行內的老鼠緊貼垂直兩端！",
         mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
-        miceForceWidth: 'w-24',
+        miceForceWidth: 'w-24 md:w-28',
         defaultStyles: { 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'justify-content': 'flex-start' },
         correctStyles: { 'flex-direction': 'column-reverse', 'flex-wrap': 'wrap-reverse', 'justify-content': 'space-between' },
         availableProps: ['flex-direction', 'flex-wrap', 'justify-content']
@@ -634,13 +634,8 @@
 
     // 點擊首頁「GO」按鈕進入遊戲
     btnStartGame.addEventListener('click', () => {
-      // 撥放開頭音樂
       playStartGameSound();
-      
-      // 首頁淡出 + 縮小動畫效果
       landingScreen.classList.add('opacity-0', 'scale-110', 'pointer-events-none');
-      
-      // 動畫播放完畢後將其隱藏，防止佔用位置
       setTimeout(() => {
         landingScreen.style.display = 'none';
       }, 700);
@@ -759,7 +754,6 @@
             if (!hintVisible) {
               setTimeout(() => {
                 setHintVisibility(true);
-                // 播放提醒音效
                 playBeep(523.25, 'sine', 0.08);
                 setTimeout(() => playBeep(659.25, 'sine', 0.08), 80);
               }, 600);
@@ -782,7 +776,7 @@
       });
     }
 
-    // 生成可愛的 SVG 老鼠
+    // 生成老鼠
     function createMouseSVG(color, level, idx) {
       const colorSet = colorMap[color] || colorMap.red;
       const fontSizing = (level.miceHeights && level.miceHeights[idx]) ? level.miceHeights[idx] : 'py-3 text-sm';
@@ -909,12 +903,11 @@
       setTimeout(checkCollision, 350);
     }
 
-    // 更新繪製主軸與交錯軸箭頭
+    // 更新主軸與交錯軸
     function updateAxes(styles) {
       const mainAxis = document.getElementById('main-axis');
       const crossAxis = document.getElementById('cross-axis');
       
-      // 如果關卡設定 display: block，或玩家把屬性切成了 block，則隱藏軸線（因為 flex 未啟動）
       if (!showAxes || styles['display'] === 'block') {
         mainAxis.style.opacity = '0';
         crossAxis.style.opacity = '0';
@@ -932,7 +925,7 @@
       mainAxis.className = 'axis-line absolute flex items-center space-x-2';
       crossAxis.className = 'axis-line absolute flex items-center space-x-2';
 
-      // 1. 主軸 Main Axis 定位
+      // 1. 主軸 Main Axis
       if (dir === 'row') {
         mainAxis.style.left = '10%';
         mainAxis.style.right = '10%';
@@ -975,7 +968,7 @@
         document.getElementById('main-axis-arrow').style.transform = 'translateY(-50%)';
       }
 
-      // 2. 交錯軸 Cross Axis 定位 (垂直於主軸)
+      // 2. 交錯軸 Cross Axis
       if (dir === 'row' || dir === 'row-reverse') {
         crossAxis.style.left = '25px';
         crossAxis.style.top = '10%';
@@ -985,9 +978,9 @@
         crossAxis.style.transformOrigin = 'left center';
         
         if (wrap === 'wrap-reverse') {
-          crossAxis.style.transform = 'rotate(-90deg) scaleX(-1) translateY(-50%)'; // 向上
+          crossAxis.style.transform = 'rotate(-90deg) scaleX(-1) translateY(-50%)'; 
         } else {
-          crossAxis.style.transform = 'rotate(90deg) translateY(-50%)'; // 向下
+          crossAxis.style.transform = 'rotate(90deg) translateY(-50%)'; 
         }
       } 
       else {
@@ -998,22 +991,35 @@
         crossAxis.style.width = '60%';
         
         if (wrap === 'wrap-reverse') {
-          crossAxis.style.transform = 'scaleX(-1)'; // 向左
+          crossAxis.style.transform = 'scaleX(-1)'; 
         } else {
-          crossAxis.style.transform = ''; // 向右
+          crossAxis.style.transform = ''; 
         }
       }
     }
 
-    // 精準碰撞偵測
+    // 精準碰撞偵測 (大幅修復：RWD 寬容器下誤判 bug)
     function checkCollision() {
+      const level = levels[currentLevelIndex];
+      
+      // 關鍵修復 1：如果玩家當前的回答與「正確解答的屬性值」不相符，絕對不觸發過關！
+      // 這能 100% 避免因 nowrap 解析度剛好對齊而產生的誤通關。
+      let isAnswerCorrect = true;
+      for (let prop of level.availableProps) {
+        if (userAnswers[prop] !== level.correctStyles[prop]) {
+          isAnswerCorrect = false;
+          break;
+        }
+      }
+      if (!isAnswerCorrect) return; // 答案不對，直接阻斷，不檢測碰撞
+
       const mice = document.querySelectorAll('.mouse-item');
       const rices = document.querySelectorAll('.target-rice');
       
       if (mice.length === 0 || rices.length === 0) return;
 
       let allMatched = true;
-      const threshold = 15; // 15px 容錯寬高距離
+      const threshold = 6; // 關鍵修復 2：將容錯間距從 15px 縮小至極精準的 6px，更嚴格把關。
 
       for (let i = 0; i < mice.length; i++) {
         const mRect = mice[i].getBoundingClientRect();
@@ -1044,13 +1050,13 @@
       playSuccessSound();
       playChewSound();
 
-      // 為老鼠加入咀嚼動畫
+      // 老鼠咀嚼動畫
       const mice = document.querySelectorAll('.mouse');
       mice.forEach(m => {
         m.classList.add('chewing');
       });
 
-      // 米粒淡出與粒子噴射效果
+      // 米粒淡出與粒子
       const rices = document.querySelectorAll('.rice');
       rices.forEach(r => {
         r.style.transition = 'all 0.4s ease-out';
@@ -1064,12 +1070,10 @@
         createCrumbs(x, y);
       });
 
-      // 根據關卡調整彈出過關視窗的內容
       const h3Title = successOverlay.querySelector('h3');
       const pMessage = document.getElementById('success-message');
 
       if (currentLevelIndex === levels.length - 1) {
-        // 最後一關 (第 20 關) 的大結局畫面
         h3Title.textContent = "🏆 完美大通關！";
         h3Title.className = "text-2xl font-black text-amber-400 mb-2";
         pMessage.innerHTML = "廚房裡的大米已經被全部吃光光了！你成功通過了所有 20 個 Flexbox 考驗，成為真正的老鼠界排版大師！🐭🌾";
@@ -1078,7 +1082,6 @@
           <span>🔄</span>
         `;
       } else {
-        // 一般關卡
         h3Title.textContent = "太棒了！老鼠吃飽了！";
         h3Title.className = "text-2xl font-black text-emerald-400 mb-2";
         pMessage.textContent = "大米被嚼嚼嚼地一掃而空！你成功掌握了這個屬性！";
@@ -1088,7 +1091,7 @@
         `;
       }
 
-      // 彈出成功遮罩
+      // 彈出過關視窗
       setTimeout(() => {
         successOverlay.classList.remove('opacity-0', 'pointer-events-none');
       }, 750);
@@ -1109,7 +1112,7 @@
       }
     }
 
-    // 工具按鈕綁定
+    // 工具按鈕
     toggleAxesBtn.addEventListener('click', () => {
       showAxes = !showAxes;
       if (showAxes) {
@@ -1134,9 +1137,7 @@
       if (currentLevelIndex < levels.length - 1) {
         loadLevel(currentLevelIndex + 1);
       } else {
-        // 如果是最後一關，點擊「重新挑戰」會回到第一關並顯示首頁
         landingScreen.style.display = 'flex';
-        // 延遲移除 class 確保能發揮 transition 特效
         setTimeout(() => {
           landingScreen.classList.remove('opacity-0', 'scale-110', 'pointer-events-none');
         }, 50);
