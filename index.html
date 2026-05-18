@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>老鼠愛大米 🐭🌾 Flexbox 20關大冒險</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Google Sans / Noto Sans TC -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=400;500;700;900&family=Fredoka+One&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', 'Fredoka One', sans-serif;
+      background-color: #f0f7f4;
+    }
+    /* 遊戲關卡按鈕 Active */
+    .level-btn.active {
+      background-color: #3b82f6;
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+    }
+    .level-btn.completed {
+      background-color: #10b981;
+      color: white;
+    }
+
+    /* 嚼嚼嚼咀嚼動畫 */
+    @keyframes chew {
+      0%, 100% { transform: scale(1) translateY(0); }
+      25% { transform: scale(1.15, 0.85) translateY(4px); }
+      50% { transform: scale(0.9, 1.1) translateY(-6px); }
+      75% { transform: scale(1.05, 0.95) translateY(2px); }
+    }
+    .chewing {
+      animation: chew 0.4s ease-in-out infinite;
+    }
+
+    /* 首頁角色搖擺動畫 */
+    @keyframes bobbing {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(3deg); }
+    }
+    .bobbing-element {
+      animation: bobbing 3s ease-in-out infinite;
+    }
+
+    @keyframes bobbing-reverse {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(-4deg); }
+    }
+    .bobbing-element-reverse {
+      animation: bobbing-reverse 3.5s ease-in-out infinite;
+    }
+
+    /* 漂浮微塵背景效果 */
+    @keyframes float-slow {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(15px); }
+    }
+    .floating-bg {
+      animation: float-slow 8s ease-in-out infinite;
+    }
+
+    /* 大米碎屑粒子效果 */
+    @keyframes float-crumb {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-20px) translateX(var(--tx)) scale(0); opacity: 0; }
+    }
+    .crumb {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: #fffdf0;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float-crumb 0.6s forwards ease-out;
+    }
+
+    /* 軸線提示樣式 */
+    .axis-line {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 隱藏原生滾動條但保持功能 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden relative">
+
+  <!-- ================= 酷炫首頁 (Landing Page) ================= -->
+  <div id="landing-screen" class="fixed inset-0 bg-gradient-to-br from-[#f0f7f4] via-[#e2f1ea] to-[#d3ece0] flex flex-col items-center justify-center z-[100] p-6 text-center select-none transition-all duration-700 ease-in-out">
+    
+    <!-- 漂浮背景裝飾元素 -->
+    <div class="absolute top-[10%] left-[8%] text-6xl opacity-25 floating-bg pointer-events-none">🌾</div>
+    <div class="absolute top-[25%] right-[10%] text-5xl opacity-20 floating-bg pointer-events-none" style="animation-delay: 1.5s;">🧀</div>
+    <div class="absolute bottom-[15%] left-[12%] text-5xl opacity-20 floating-bg pointer-events-none" style="animation-delay: 3s;">🐭</div>
+    <div class="absolute bottom-[20%] right-[15%] text-6xl opacity-25 floating-bg pointer-events-none" style="animation-delay: 0.5s;">🌾</div>
+    <div class="absolute top-[50%] left-[85%] text-4xl opacity-15 floating-bg pointer-events-none" style="animation-delay: 2s;">🍙</div>
+    
+    <div class="max-w-2xl bg-white/70 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/80 shadow-2xl relative flex flex-col items-center">
+      
+      <!-- 閃亮裝飾圓環 -->
+      <div class="absolute -top-12 w-24 h-24 bg-amber-400 rounded-full flex items-center justify-center shadow-lg border-4 border-white animate-bounce">
+        <span class="text-5xl">🌾</span>
+      </div>
+
+      <!-- 標題 -->
+      <h1 class="text-5xl md:text-7xl font-black text-slate-800 tracking-wider mb-6 mt-6 drop-shadow-sm font-sans flex items-center justify-center gap-3">
+        <span>老鼠愛大米</span>
+      </h1>
+      
+      <!-- 副標題 -->
+      <p class="text-base md:text-xl text-slate-600 max-w-lg font-medium mb-10 leading-relaxed tracking-wide">
+        用 <span class="text-blue-600 font-extrabold px-1.5 py-0.5 bg-blue-50 rounded-md">CSS FLEXBOX</span> 帶領飢餓的老鼠們吃光美味的大米！
+      </p>
+
+      <!-- 角色並列展示 (老鼠 & 大米) -->
+      <div class="flex items-center justify-center gap-12 mb-12">
+        <!-- 巨型老鼠 -->
+        <div class="bobbing-element flex flex-col items-center">
+          <svg viewBox="0 0 100 100" class="w-24 h-24 md:w-32 md:h-32 text-red-500 drop-shadow-xl">
+            <circle cx="30" cy="30" r="16" fill="currentColor" />
+            <circle cx="30" cy="30" r="10" fill="#ffb3c1" />
+            <circle cx="70" cy="30" r="16" fill="currentColor" />
+            <circle cx="70" cy="30" r="10" fill="#ffb3c1" />
+            <ellipse cx="50" cy="62" rx="28" ry="24" fill="currentColor" />
+            <circle cx="40" cy="54" r="5" fill="#1e293b" />
+            <circle cx="60" cy="54" r="5" fill="#1e293b" />
+            <circle cx="42" cy="52" r="1.5" fill="#ffffff" />
+            <circle cx="62" cy="52" r="1.5" fill="#ffffff" />
+            <polygon points="50,68 44,62 56,62" fill="#fda4af" />
+            <line x1="22" y1="62" x2="8" y2="60" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="22" y1="67" x2="6" y2="70" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="78" y1="62" x2="92" y2="60" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="78" y1="67" x2="94" y2="70" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <span class="mt-2 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">阿紅 🐭</span>
+        </div>
+
+        <div class="text-4xl text-amber-400 font-black animate-pulse">❤️</div>
+
+        <!-- 巨型大米 -->
+        <div class="bobbing-element-reverse flex flex-col items-center">
+          <div class="relative w-24 h-24 md:w-32 md:h-32 text-amber-500 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border-4 border-dashed border-current opacity-30 animate-[spin_20s_linear_infinite]"></div>
+            <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 drop-shadow-xl relative z-10">
+              <path d="M 50,15 C 72,32 72,68 50,85 C 28,68 28,32 50,15 Z" fill="currentColor" stroke="#fff" stroke-width="2" />
+              <path d="M 50,22 Q 54,50 50,78" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8" />
+            </svg>
+          </div>
+          <span class="mt-2 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">香大米 🌾</span>
+        </div>
+      </div>
+
+      <!-- GO 進入按鈕 -->
+      <button id="btn-start-game" class="px-16 py-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 font-black text-3xl rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all cursor-pointer border-b-4 border-amber-600 relative overflow-hidden group animate-[pulse_2s_infinite]">
+        <span class="relative z-10 tracking-widest flex items-center justify-center gap-2">
+          <span>GO!</span>
+          <span class="group-hover:translate-x-1.5 transition-transform duration-300">🐾</span>
+        </span>
+        <!-- 光澤特效 -->
+        <div class="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-45 group-hover:animate-[shine_0.8s_ease-in-out] pointer-events-none"></div>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ================= 頂部導航與進度列 ================= -->
+  <header class="bg-white border-b border-gray-100 shadow-sm py-4 px-6 flex flex-wrap justify-between items-center gap-4">
+    <div class="flex items-center space-x-3">
+      <span class="text-3xl animate-bounce">🐭</span>
+      <div>
+        <h1 class="text-xl font-black text-gray-800 tracking-wider">老鼠愛大米 <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full ml-1">Flexbox 20關挑戰</span></h1>
+        <p class="text-xs text-gray-500">用 CSS Flexbox 帶領飢餓的老鼠們吃光美味的大米！</p>
+      </div>
+    </div>
+
+    <!-- 關卡選擇與前進後退 -->
+    <div class="flex items-center space-x-2 bg-gray-100 p-1.5 rounded-xl">
+      <button id="prev-btn" class="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm hover:bg-gray-50 active:scale-95 transition-all text-gray-700 font-black disabled:opacity-40">&lt;</button>
+      <div class="relative">
+        <select id="level-select" class="appearance-none bg-white px-4 py-1.5 pr-8 rounded-lg shadow-sm font-bold text-gray-700 border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <!-- 關卡選項將由 JS 動態生成 -->
+        </select>
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▼</span>
+      </div>
+      <button id="next-btn" class="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm hover:bg-gray-50 active:scale-95 transition-all text-gray-700 font-black disabled:opacity-40">&gt;</button>
+    </div>
+
+    <!-- 輔助工具 -->
+    <div class="flex items-center space-x-3">
+      <button id="toggle-axes" class="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-sm font-semibold transition-all">
+        <span id="axis-eye-icon">👁️</span>
+        <span>輔助軸線 : <strong id="axis-status-text">開啟</strong></span>
+      </button>
+      <button id="reset-btn" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-all">
+        🔄 重置本關
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= 主要內容區 ================= -->
+  <main class="flex-1 flex flex-col lg:flex-row p-4 lg:p-6 gap-6 max-w-7xl mx-auto w-full">
+    
+    <!-- 左側：編輯器與說明面版 -->
+    <div class="w-full lg:w-5/12 flex flex-col gap-6">
+      
+      <!-- 關卡指引卡 -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden flex flex-col justify-between">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-100 rounded-full opacity-30 pointer-events-none"></div>
+        
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-2 text-amber-600">
+              <span class="text-xl">🏆</span>
+              <span id="level-num-title" class="font-bold tracking-wider">LEVEL 1 / 20</span>
+            </div>
+            <!-- 手動提示按鈕 -->
+            <button id="btn-toggle-hint" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-1 rounded-lg font-bold transition-all flex items-center space-x-1">
+              <span>💡</span>
+              <span id="text-toggle-hint">顯示提示</span>
+            </button>
+          </div>
+          
+          <h2 id="level-title" class="text-xl font-black text-gray-800 mb-3">關卡載入中...</h2>
+          <div id="level-instructions" class="text-gray-600 leading-relaxed mb-4 text-sm">
+            <!-- 關卡指令 -->
+          </div>
+        </div>
+
+        <!-- 智慧提示框 (預設隱藏) -->
+        <div id="level-hint" class="bg-blue-50 border-l-4 border-blue-400 p-3.5 rounded-r-xl text-blue-800 text-xs leading-relaxed transition-all duration-300 transform scale-95 opacity-0 h-0 overflow-hidden pointer-events-none">
+          <!-- 提示內容 -->
+        </div>
+      </div>
+
+      <!-- CSS 編輯器 -->
+      <div class="bg-slate-900 text-slate-100 rounded-2xl p-6 shadow-md border border-slate-800 flex flex-col relative">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+          <div class="flex items-center space-x-2">
+            <span class="w-3.5 h-3.5 rounded-full bg-red-500"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-yellow-500"></span>
+            <span class="w-3.5 h-3.5 rounded-full bg-green-500"></span>
+          </div>
+          <span class="text-xs text-slate-500 font-mono">kitchen-style.css</span>
+        </div>
+
+        <div class="font-mono text-sm lg:text-base space-y-3 flex-1">
+          <div>
+            <span class="text-pink-400">#kitchen-floor</span> {
+          </div>
+
+          <!-- 動態生成的屬性選擇區 -->
+          <div id="editor-properties" class="space-y-4 my-2">
+            <!-- 由 JS 動態繪製屬性與下拉選單 -->
+          </div>
+
+          <div>
+            }
+          </div>
+        </div>
+
+        <!-- 成功過關彈窗 -->
+        <div id="success-overlay" class="absolute inset-0 bg-slate-950/95 rounded-2xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+          <span class="text-6xl mb-4 animate-bounce">🎉</span>
+          <h3 class="text-2xl font-black text-emerald-400 mb-2">太棒了！老鼠吃飽了！</h3>
+          <p class="text-sm text-slate-300 max-w-xs mb-6" id="success-message">大米被嚼嚼嚼地一掃而空！你成功掌握了這個屬性！</p>
+          <button id="next-level-btn" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all flex items-center space-x-2 mx-auto">
+            <span>前往下一關</span>
+            <span>👉</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右側：遊戲廚房地板 -->
+    <div class="flex-1 flex flex-col">
+      <div class="bg-amber-50 rounded-2xl p-4 shadow-sm border border-amber-100 flex-1 flex flex-col min-h-[480px] lg:min-h-[520px]">
+        <div class="flex items-center justify-between mb-3 text-xs text-amber-800 font-bold bg-amber-100/50 px-3 py-1.5 rounded-lg">
+          <span>🍳 廚房地板 (Kitchen Floor)</span>
+          <span id="dimension-indicator">滿分 RWD 自適應</span>
+        </div>
+
+        <!-- 遊戲操作主要定位層 -->
+        <div class="flex-1 relative rounded-xl border-4 border-dashed border-amber-200/60 overflow-hidden bg-orange-50/20">
+          
+          <!-- 第一層：大米目標層 (正確答案佈局) -->
+          <div id="target-floor" class="absolute inset-0 p-6 pointer-events-none z-10">
+            <!-- 大米元件將由此動態生成 -->
+          </div>
+
+          <!-- 第二層：玩家操縱的老鼠層 -->
+          <div id="kitchen-floor" class="absolute inset-0 p-6 z-20 transition-all duration-500 ease-out">
+            <!-- 小老鼠元件將由 JS 動態生成 -->
+          </div>
+
+          <!-- 第三層：輔助軸線圖層 -->
+          <div id="axes-overlay" class="absolute inset-0 pointer-events-none z-30 p-2 overflow-hidden transition-opacity duration-300">
+            <div class="relative w-full h-full">
+              <!-- 主軸 (藍色) -->
+              <div id="main-axis" class="axis-line absolute flex items-center space-x-2 opacity-0">
+                <div class="h-0.5 bg-blue-500 border-t border-dashed border-blue-400 flex-1 relative">
+                  <div class="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-[6px] border-l-blue-500" id="main-axis-arrow"></div>
+                </div>
+                <span class="text-[10px] font-bold text-white bg-blue-600 px-1.5 py-0.5 rounded shadow">主軸 (Main)</span>
+              </div>
+              
+              <!-- 交錯軸 (橘色) -->
+              <div id="cross-axis" class="axis-line absolute flex items-center space-x-2 opacity-0">
+                <div class="h-0.5 bg-orange-500 border-t border-dashed border-orange-400 flex-1 relative">
+                  <div class="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-[6px] border-l-orange-500" id="cross-axis-arrow"></div>
+                </div>
+                <span class="text-[10px] font-bold text-white bg-orange-600 px-1.5 py-0.5 rounded shadow">交錯軸 (Cross)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 底部欄 -->
+  <footer class="bg-gray-100 text-center py-4 text-xs text-gray-500 border-t border-gray-200 mt-6">
+    <p>🐭 老鼠愛大米：《Flexbox 20關超進化闖關大冒險》實作版 © 2026</p>
+  </footer>
+
+  <!-- 音效與核心邏輯 -->
+  <script>
+    // 網頁合成音效 (AudioContext)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playBeep(freq, type, duration) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = type || 'sine';
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.log('音效撥放需要使用者點擊互動解鎖。');
+      }
+    }
+
+    function playSuccessSound() {
+      playBeep(440, 'sine', 0.1);
+      setTimeout(() => playBeep(554.37, 'sine', 0.1), 100);
+      setTimeout(() => playBeep(659.25, 'sine', 0.12), 200);
+      setTimeout(() => playBeep(880, 'sine', 0.25), 300);
+    }
+
+    function playChewSound() {
+      for(let i=0; i<5; i++) {
+        setTimeout(() => {
+          playBeep(220 + Math.random() * 120, 'triangle', 0.04);
+        }, i * 65);
+      }
+    }
+
+    // 新增：按下 GO 時的開場炫麗音效
+    function playStartGameSound() {
+      playBeep(523.25, 'sine', 0.1);
+      setTimeout(() => playBeep(587.33, 'sine', 0.1), 80);
+      setTimeout(() => playBeep(659.25, 'sine', 0.1), 160);
+      setTimeout(() => playBeep(698.46, 'sine', 0.1), 240);
+      setTimeout(() => playBeep(783.99, 'sine', 0.15), 320);
+      setTimeout(() => playBeep(880.00, 'sine', 0.15), 400);
+      setTimeout(() => playBeep(987.77, 'sine', 0.2), 480);
+      setTimeout(() => playBeep(1046.50, 'sine', 0.35), 560);
+    }
+
+    // SVG 色票定義
+    const colorMap = {
+      red: { base: '#ef4444', text: 'text-red-500', bg: 'bg-red-500' },
+      blue: { base: '#3b82f6', text: 'text-blue-500', bg: 'bg-blue-500' },
+      green: { base: '#10b981', text: 'text-emerald-500', bg: 'bg-emerald-500' },
+      yellow: { base: '#f59e0b', text: 'text-amber-500', bg: 'bg-amber-500' }
+    };
+
+    // 完整的 20 個精美關卡資料庫
+    const levels = [
+      {
+        id: 1,
+        title: "喚醒大門 (display: flex)",
+        instructions: "兩隻小老鼠正面對著美味的大米，可是牠們預設是傳統的 <code>block</code> 元件，導致牠們像磚塊一樣<b>垂直疊在一起</b>。請在右邊編輯器中將 <code>display</code> 切換為彈性佈局，讓老鼠們瞬間並排，與大米站在同一條水平線上！",
+        hint: "提示：設定 <code>display: flex</code> 能啟動彈性盒模型，它的預設效果是將容器內的元件水平橫向排列 (row)。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'display': 'block' },
+        correctStyles: { 'display': 'flex' },
+        availableProps: ['display']
+      },
+      {
+        id: 2,
+        title: "大米的引力 (flex-direction)",
+        instructions: "大米們被垂直掛在廚房的水管上。我們需要將主軸方向改為垂直方向，讓小老鼠們由上往下排成一列去享用！",
+        hint: "提示：<code>flex-direction</code> 屬性決定了主軸的方向。使用 <code>column</code> 即可將橫向排列轉為縱向排列。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'flex-direction': 'row' },
+        correctStyles: { 'flex-direction': 'column' },
+        availableProps: ['flex-direction']
+      },
+      {
+        id: 3,
+        title: "右方的誘惑 (justify-content)",
+        instructions: "一隻 🔴 <b>紅老鼠</b> 望著最右側的大米流口水。請調整主軸上的對齊方式，讓牠走到水平線的最尾端。",
+        hint: "提示：<code>justify-content</code> 控制元件在「主軸」上的對齊。設定為 <code>flex-end</code> 可以讓老鼠移動至最右邊（終點）。",
+        mice: ['red'],
+        defaultStyles: { 'justify-content': 'flex-start' },
+        correctStyles: { 'justify-content': 'flex-end' },
+        availableProps: ['justify-content']
+      },
+      {
+        id: 4,
+        title: "廚房正中央 (justify-content)",
+        instructions: "🔵 <b>藍老鼠</b> 的大米剛好飄在廚房水平位置的中央。請使用對齊指令，讓牠走到正中間。",
+        hint: "提示：<code>justify-content: center</code> 能把所有的彈性元件集中在主軸的中心點位置。",
+        mice: ['blue'],
+        defaultStyles: { 'justify-content': 'flex-start' },
+        correctStyles: { 'justify-content': 'center' },
+        availableProps: ['justify-content']
+      },
+      {
+        id: 5,
+        title: "老鼠聚餐 (justify-content)",
+        instructions: "兩隻小老鼠分頭要去吃兩邊邊緣的大米。請選擇一個對齊屬性，使老鼠們貼緊兩側，將剩餘的空間留在牠們中間。",
+        hint: "提示：<code>space-between</code> 會將第一個元件排在起點，最後一個排在終點，其餘空間平均分配在元件之間。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'justify-content': 'flex-start' },
+        correctStyles: { 'justify-content': 'space-between' },
+        availableProps: ['justify-content']
+      },
+      {
+        id: 6,
+        title: "完美等距 (justify-content)",
+        instructions: "三隻老鼠要吃分散在廚房裡的大米。請注意，大米與大米之間的空隙是一樣的，而且兩邊邊緣與老鼠的距離，也與內部完全等距！",
+        hint: "提示：<code>space-evenly</code> 會讓每個間隔（包含頭尾邊界）的寬度完全相等。而 <code>space-around</code> 的頭尾間距只有內部的一半。",
+        mice: ['red', 'blue', 'green'],
+        defaultStyles: { 'justify-content': 'flex-start' },
+        correctStyles: { 'justify-content': 'space-evenly' },
+        availableProps: ['justify-content']
+      },
+      {
+        id: 7,
+        title: "左右邊際平分 (justify-content)",
+        instructions: "大米分散在廚房各處，而老鼠到邊緣的距離，剛好是大米與大米之間間隔的一半。請選擇最適合的空隙平分指令。",
+        hint: "提示：<code>space-around</code> 會讓每個元件的左右兩側分配相同的空隙，因此兩端的間距是元件間距的一半。",
+        mice: ['red', 'blue', 'green'],
+        defaultStyles: { 'justify-content': 'flex-start' },
+        correctStyles: { 'justify-content': 'space-around' },
+        availableProps: ['justify-content']
+      },
+      {
+        id: 8,
+        title: "鏡像世界 (flex-direction: row-reverse)",
+        instructions: "廚房的大米擺放順序反過來了！左邊是藍大米，右邊是紅大米。請利用 <b>反轉主軸</b> 指令，讓老鼠不僅起點到右邊，且順序也顛倒排列！",
+        hint: "提示：<code>flex-direction: row-reverse</code> 會將主軸起點設在右側，元件會從右到左反向排列。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'flex-direction': 'row' },
+        correctStyles: { 'flex-direction': 'row-reverse' },
+        availableProps: ['flex-direction']
+      },
+      {
+        id: 9,
+        title: "逆流向上 (flex-direction: column-reverse)",
+        instructions: "大米這次又掛在牆角水管，但最上方是藍大米，下方是紅大米。請將老鼠垂直排列，且起點改在下方，逆著朝上排列！",
+        hint: "提示：<code>column-reverse</code> 將主軸轉為垂直，且方向由下往上，讓 HTML 元件順序反向呈現。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'flex-direction': 'row' },
+        correctStyles: { 'flex-direction': 'column-reverse' },
+        availableProps: ['flex-direction']
+      },
+      {
+        id: 10,
+        title: "地板上的米香 (align-items)",
+        instructions: "🔴 <b>紅大米</b> 掉在了廚房的最底部（交錯軸的終點）。請調整交錯軸的對齊，把小老鼠送到底部吃大米。",
+        hint: "提示：<code>align-items</code> 控制交錯軸上的對齊. 設定成 <code>flex-end</code> 會使元件對齊到交錯軸的最尾端。",
+        mice: ['red'],
+        defaultStyles: { 'align-items': 'flex-start' },
+        correctStyles: { 'align-items': 'flex-end' },
+        availableProps: ['align-items']
+      },
+      {
+        id: 11,
+        title: "空中飛鼠 (align-items)",
+        instructions: "🔵 <b>藍大米</b> 飄在廚房的正中央高度。請調整交錯軸，讓藍老鼠能完美的垂直置中對齊大米。",
+        hint: "提示：<code>align-items: center</code> 能讓所有彈性項目在交錯軸上居中對齊。",
+        mice: ['blue'],
+        defaultStyles: { 'align-items': 'flex-start' },
+        correctStyles: { 'align-items': 'center' },
+        availableProps: ['align-items']
+      },
+      {
+        id: 12,
+        title: "高矮胖瘦的聚會 (align-items: baseline)",
+        instructions: "這群老鼠的身高和肚子裡的名字（字體）尺寸完全不同！請找出一個對齊方式，讓牠們能夠以<b>文字內容的底部基準線</b>對齊大米。",
+        hint: "提示：<code>align-items: baseline</code> 會依照元件內文字的底線（Baseline）進行精準對齊。注意看老鼠名牌的底部對齊效果！",
+        mice: ['red', 'blue', 'green'],
+        miceHeights: ['py-2 text-xs', 'py-6 text-xl', 'py-4 text-base'], // 模擬不同高度/文字尺寸
+        defaultStyles: { 'align-items': 'flex-start' },
+        correctStyles: { 'align-items': 'baseline' },
+        availableProps: ['align-items']
+      },
+      {
+        id: 13,
+        title: "大米溢出來了 (flex-wrap)",
+        instructions: "好多老鼠呀！廚房寬度塞不下了。請啟動 <b>換行機制</b>，當老鼠超出寬度時自動換到下一行，對齊分佈在兩層的大米。",
+        hint: "提示：預設的 <code>flex-wrap: nowrap</code> 會強擠在同一行。設定為 <code>wrap</code> 就能讓溢出的元件自動落到下一行！",
+        mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
+        miceForceWidth: 'w-24', // 強制加寬以觸發折行
+        defaultStyles: { 'flex-wrap': 'nowrap' },
+        correctStyles: { 'flex-wrap': 'wrap' },
+        availableProps: ['flex-wrap']
+      },
+      {
+        id: 14,
+        title: "倒過來的貨架 (flex-wrap: wrap-reverse)",
+        instructions: "大米滿出來並且折行了，但大米換行的位置竟然顛倒了——第一行被推到了下方，新的一行反而排在最上方！請使用換行反轉指令。",
+        hint: "提示：<code>flex-wrap: wrap-reverse</code> 可以在換行時，讓新的一行出現在原本的上方（反向延伸）。",
+        mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
+        miceForceWidth: 'w-24',
+        defaultStyles: { 'flex-wrap': 'nowrap' },
+        correctStyles: { 'flex-wrap': 'wrap-reverse' },
+        availableProps: ['flex-wrap']
+      },
+      {
+        id: 15,
+        title: "直立滑梯 (雙重屬性 🌟)",
+        instructions: "大米在最右側牆壁垂直排列，且最下方的老鼠必須在最底下。請調整 <b>主軸方向 (flex-direction)</b> 並且調整 <b>主軸對齊 (justify-content)</b> 讓老鼠抵達終點！",
+        hint: "提示：先將主軸改為垂直 <code>column</code>，再用 <code>flex-end</code> 將老鼠對齊到垂直主軸的末端。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'flex-direction': 'row', 'justify-content': 'flex-start' },
+        correctStyles: { 'flex-direction': 'column', 'justify-content': 'flex-end' },
+        availableProps: ['flex-direction', 'justify-content']
+      },
+      {
+        id: 16,
+        title: "反向左對齊特工 (雙重屬性 🌟)",
+        instructions: "大米在最左邊，但是順序反過來了（藍在左，紅在右）。這需要我們 <b>反轉水平主軸</b> 並且讓老鼠們集體向 <b>主軸的末端 (實質上的左邊)</b> 對齊！",
+        hint: "提示：<code>flex-direction: row-reverse</code> 會把右側設為起點。如果此時你想讓牠們靠左，必須向主軸的末端對齊，所以要搭配 <code>justify-content: flex-end</code>！",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'flex-direction': 'row', 'justify-content': 'flex-start' },
+        correctStyles: { 'flex-direction': 'row-reverse', 'justify-content': 'flex-end' },
+        availableProps: ['flex-direction', 'justify-content']
+      },
+      {
+        id: 17,
+        title: "空中走鋼索 (雙重屬性 🌟)",
+        instructions: "大米們分開飄在廚房水平中間線的兩側邊緣。請結合 <b>主軸左右對齊</b> 與 <b>交錯軸置中對齊</b> 讓老鼠安全抵達！",
+        hint: "提示：要讓老鼠分散在兩側，請使用 <code>justify-content: space-between</code>；要讓牠們在垂直高度置中，請使用 <code>align-items: center</code>。",
+        mice: ['red', 'blue'],
+        defaultStyles: { 'justify-content': 'flex-start', 'align-items': 'flex-start' },
+        correctStyles: { 'justify-content': 'space-between', 'align-items': 'center' },
+        availableProps: ['justify-content', 'align-items']
+      },
+      {
+        id: 18,
+        title: "垂直中軸線 (三重屬性 👑)",
+        instructions: "大米垂直排在廚房的水平中央，並且大米彼此完美均勻散開。請調整：1. 主軸方向 2. 主軸垂直分散 3. 水平置中！",
+        hint: "提示：使用 <code>column</code> 改為直向，再以 <code>space-evenly</code> 讓大米等距散開，最後用 <code>align-items: center</code> 水平置中。",
+        mice: ['red', 'blue', 'green'],
+        defaultStyles: { 'flex-direction': 'row', 'justify-content': 'flex-start', 'align-items': 'flex-start' },
+        correctStyles: { 'flex-direction': 'column', 'justify-content': 'space-evenly', 'align-items': 'center' },
+        availableProps: ['flex-direction', 'justify-content', 'align-items']
+      },
+      {
+        id: 19,
+        title: "繽紛的晚餐盛宴 (三重屬性 👑)",
+        instructions: "大米在底部垂直顛倒排列（藍在最上，紅在最下），並且整列要對齊到右邊牆壁。考驗你對三個屬性的綜合調配能力！",
+        hint: "提示：1. <code>column-reverse</code> 使起點在下並垂直排列。 2. <code>space-around</code> 讓大米在垂直線上保持舒服的間距。 3. <code>align-items: flex-end</code> 將牠們水平推到右側邊界。",
+        mice: ['red', 'blue', 'green'],
+        defaultStyles: { 'flex-direction': 'row', 'justify-content': 'flex-start', 'align-items': 'flex-start' },
+        correctStyles: { 'flex-direction': 'column-reverse', 'justify-content': 'space-around', 'align-items': 'flex-end' },
+        availableProps: ['flex-direction', 'justify-content', 'align-items']
+      },
+      {
+        id: 20,
+        title: "終極大米宴 (終極大師挑戰 🏆)",
+        instructions: "恭喜來到最後一關！老鼠們數量極多會滿出來，且大米在直向上是反向排列的，同時滿出來的老鼠必須要往左側換行，且要垂直兩端分開。請用你最強的 Flexbox 技術解開這題！",
+        hint: "提示：1. <code>column-reverse</code> 使老鼠垂直由下往上排列。 2. <code>wrap-reverse</code> 讓溢出的老鼠往交錯軸的反方向（左側）換行。 3. <code>justify-content: space-between</code> 使上下行內的老鼠緊貼垂直兩端！",
+        mice: ['red', 'blue', 'green', 'yellow', 'red', 'blue'],
+        miceForceWidth: 'w-24',
+        defaultStyles: { 'flex-direction': 'row', 'flex-wrap': 'nowrap', 'justify-content': 'flex-start' },
+        correctStyles: { 'flex-direction': 'column-reverse', 'flex-wrap': 'wrap-reverse', 'justify-content': 'space-between' },
+        availableProps: ['flex-direction', 'flex-wrap', 'justify-content']
+      }
+    ];
+
+    // CSS 選項庫
+    const propOptions = {
+      'display': ['block', 'flex'],
+      'flex-direction': ['row', 'row-reverse', 'column', 'column-reverse'],
+      'justify-content': ['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'],
+      'align-items': ['flex-start', 'flex-end', 'center', 'baseline', 'stretch'],
+      'flex-wrap': ['nowrap', 'wrap', 'wrap-reverse']
+    };
+
+    let currentLevelIndex = 0;
+    let userAnswers = {}; 
+    let showAxes = true;
+    let hintVisible = false; // 預設提示隱藏
+
+    // DOM 快取
+    const landingScreen = document.getElementById('landing-screen');
+    const btnStartGame = document.getElementById('btn-start-game');
+    const levelSelect = document.getElementById('level-select');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const levelNumTitle = document.getElementById('level-num-title');
+    const levelTitle = document.getElementById('level-title');
+    const levelInstructions = document.getElementById('level-instructions');
+    const levelHint = document.getElementById('level-hint');
+    const btnToggleHint = document.getElementById('btn-toggle-hint');
+    const textToggleHint = document.getElementById('text-toggle-hint');
+    const editorProperties = document.getElementById('editor-properties');
+    const kitchenFloor = document.getElementById('kitchen-floor');
+    const targetFloor = document.getElementById('target-floor');
+    const successOverlay = document.getElementById('success-overlay');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const toggleAxesBtn = document.getElementById('toggle-axes');
+    const axisStatusText = document.getElementById('axis-status-text');
+    const axisEyeIcon = document.getElementById('axis-eye-icon');
+
+    // 點擊首頁「GO」按鈕進入遊戲
+    btnStartGame.addEventListener('click', () => {
+      // 撥放開頭音樂
+      playStartGameSound();
+      
+      // 首頁淡出 + 縮小動畫效果
+      landingScreen.classList.add('opacity-0', 'scale-110', 'pointer-events-none');
+      
+      // 動畫播放完畢後將其隱藏，防止佔用位置
+      setTimeout(() => {
+        landingScreen.style.display = 'none';
+      }, 700);
+    });
+
+    // 初始化關卡下拉選單
+    function initLevelSelect() {
+      levelSelect.innerHTML = '';
+      levels.forEach((lvl, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = `第 ${lvl.id} 關 : ${lvl.title}`;
+        levelSelect.appendChild(opt);
+      });
+
+      levelSelect.addEventListener('change', (e) => {
+        loadLevel(parseInt(e.target.value));
+      });
+    }
+
+    // 控制提示欄的顯示與隱藏
+    function setHintVisibility(visible) {
+      hintVisible = visible;
+      if (hintVisible) {
+        levelHint.classList.remove('opacity-0', 'scale-95', 'h-0', 'pointer-events-none');
+        levelHint.classList.add('opacity-100', 'scale-100', 'h-auto', 'mt-3');
+        textToggleHint.textContent = "隱藏提示";
+      } else {
+        levelHint.classList.add('opacity-0', 'scale-95', 'h-0', 'pointer-events-none');
+        levelHint.classList.remove('opacity-100', 'scale-100', 'h-auto', 'mt-3');
+        textToggleHint.textContent = "顯示提示";
+      }
+    }
+
+    // 點擊提示按鈕切換
+    btnToggleHint.addEventListener('click', () => {
+      setHintVisibility(!hintVisible);
+      playBeep(400, 'sine', 0.05);
+    });
+
+    // 載入關卡
+    function loadLevel(index) {
+      currentLevelIndex = index;
+      const level = levels[index];
+      
+      levelSelect.value = index;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === levels.length - 1;
+
+      successOverlay.classList.add('opacity-0', 'pointer-events-none');
+
+      levelNumTitle.textContent = `LEVEL ${level.id} / ${levels.length}`;
+      levelTitle.textContent = level.title;
+      levelInstructions.innerHTML = level.instructions;
+      
+      // 提示重設為預設隱藏
+      setHintVisibility(false);
+      levelHint.innerHTML = level.hint;
+
+      // 載入該關預設值
+      userAnswers = { ...level.defaultStyles };
+
+      renderEditor();
+      renderGameElements();
+      applyStyles();
+    }
+
+    // 繪製 CSS 編輯器區
+    function renderEditor() {
+      const level = levels[currentLevelIndex];
+      editorProperties.innerHTML = '';
+
+      // 如果當前關卡不包含 display 控制，預設畫上一行靜態的 display: flex; 供參考
+      if (!level.availableProps.includes('display')) {
+        const staticDisplay = document.createElement('div');
+        staticDisplay.className = 'pl-6 text-slate-400 text-sm lg:text-base';
+        staticDisplay.innerHTML = `<span class="text-cyan-400">display</span>: <span class="text-amber-300">flex</span>;`;
+        editorProperties.appendChild(staticDisplay);
+      }
+
+      level.availableProps.forEach(prop => {
+        const propRow = document.createElement('div');
+        propRow.className = 'flex flex-wrap items-center gap-2 pl-6 text-sm lg:text-base';
+
+        const label = document.createElement('span');
+        label.className = 'text-cyan-400 font-semibold';
+        label.textContent = `${prop}: `;
+
+        const selectWrap = document.createElement('div');
+        selectWrap.className = 'relative inline-block';
+
+        const select = document.createElement('select');
+        select.className = 'bg-slate-800 text-amber-300 font-bold px-3 py-1 pr-8 rounded border border-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer appearance-none transition-all text-sm';
+        
+        propOptions[prop].forEach(opt => {
+          const optEl = document.createElement('option');
+          optEl.value = opt;
+          optEl.textContent = opt;
+          if (userAnswers[prop] === opt) {
+            optEl.selected = true;
+          }
+          select.appendChild(optEl);
+        });
+
+        const arrow = document.createElement('span');
+        arrow.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] pointer-events-none';
+        arrow.textContent = '▼';
+
+        select.addEventListener('change', (e) => {
+          userAnswers[prop] = e.target.value;
+          playBeep(350, 'square', 0.05);
+          applyStyles();
+          
+          // 檢查玩家選擇：若回答錯誤，自動掀開提示！
+          if (userAnswers[prop] !== level.correctStyles[prop]) {
+            if (!hintVisible) {
+              setTimeout(() => {
+                setHintVisibility(true);
+                // 播放提醒音效
+                playBeep(523.25, 'sine', 0.08);
+                setTimeout(() => playBeep(659.25, 'sine', 0.08), 80);
+              }, 600);
+            }
+          }
+        });
+
+        selectWrap.appendChild(select);
+        selectWrap.appendChild(arrow);
+        
+        propRow.appendChild(label);
+        propRow.appendChild(selectWrap);
+        
+        const semi = document.createElement('span');
+        semi.className = 'text-slate-400';
+        semi.textContent = ';';
+        propRow.appendChild(semi);
+
+        editorProperties.appendChild(propRow);
+      });
+    }
+
+    // 生成可愛的 SVG 老鼠
+    function createMouseSVG(color, level, idx) {
+      const colorSet = colorMap[color] || colorMap.red;
+      const fontSizing = (level.miceHeights && level.miceHeights[idx]) ? level.miceHeights[idx] : 'py-3 text-sm';
+      const forceWidth = level.miceForceWidth || 'w-20';
+
+      const wrap = document.createElement('div');
+      wrap.className = `mouse-item flex flex-col items-center justify-center transition-all duration-500 ease-out shrink-0 ${forceWidth} ${fontSizing} text-center`;
+      
+      const mouseContainer = document.createElement('div');
+      mouseContainer.className = 'mouse relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24 transition-all duration-300 transform';
+      mouseContainer.style.color = colorSet.base;
+
+      mouseContainer.innerHTML = `
+        <svg viewBox="0 0 100 100" class="w-14 h-14 md:w-16 md:h-16 drop-shadow-md z-10">
+          <circle cx="30" cy="30" r="16" fill="currentColor" />
+          <circle cx="30" cy="30" r="10" fill="#ffb3c1" />
+          <circle cx="70" cy="30" r="16" fill="currentColor" />
+          <circle cx="70" cy="30" r="10" fill="#ffb3c1" />
+          <ellipse cx="50" cy="62" rx="28" ry="24" fill="currentColor" />
+          <circle cx="40" cy="54" r="5" fill="#1e293b" />
+          <circle cx="60" cy="54" r="5" fill="#1e293b" />
+          <circle cx="42" cy="52" r="1.5" fill="#ffffff" />
+          <circle cx="62" cy="52" r="1.5" fill="#ffffff" />
+          <polygon points="50,68 44,62 56,62" fill="#fda4af" />
+          <line x1="22" y1="62" x2="8" y2="60" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="22" y1="67" x2="6" y2="70" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="78" y1="62" x2="92" y2="60" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="78" y1="67" x2="94" y2="70" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-black bg-white/95 shadow-sm px-1.5 py-0.5 rounded-full border border-gray-100 text-slate-700 whitespace-nowrap z-20">
+          ${color.toUpperCase()}
+        </span>
+      `;
+      wrap.appendChild(mouseContainer);
+      return wrap;
+    }
+
+    // 生成大米 (附帶圓形虛線盤子)
+    function createRiceSVG(color, level, idx) {
+      const colorSet = colorMap[color] || colorMap.red;
+      const fontSizing = (level.miceHeights && level.miceHeights[idx]) ? level.miceHeights[idx] : 'py-3 text-sm';
+      const forceWidth = level.miceForceWidth || 'w-20';
+
+      const wrap = document.createElement('div');
+      wrap.className = `target-rice flex flex-col items-center justify-center shrink-0 ${forceWidth} ${fontSizing}`;
+      
+      const riceContainer = document.createElement('div');
+      riceContainer.className = 'rice relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24 transition-all duration-300';
+      riceContainer.style.color = colorSet.base;
+
+      riceContainer.innerHTML = `
+        <div class="absolute inset-0 rounded-full border-4 border-dashed border-current opacity-40 bg-white/30 shadow-inner"></div>
+        <div class="relative z-10 opacity-70 transform hover:scale-110 transition-transform duration-300" style="margin-bottom: 6px;">
+          <svg viewBox="0 0 100 100" class="w-10 h-10 md:w-12 md:h-12 drop-shadow-sm">
+            <path d="M 50,15 C 72,32 72,68 50,85 C 28,68 28,32 50,15 Z" fill="currentColor" stroke="#fff" stroke-width="2" />
+            <path d="M 50,22 Q 54,50 50,78" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8" />
+          </svg>
+        </div>
+        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-black bg-slate-800 text-white/95 px-2 py-0.5 rounded-full whitespace-nowrap z-20 shadow border border-slate-700">
+          ${color.toUpperCase()}
+        </span>
+      `;
+      wrap.appendChild(riceContainer);
+      return wrap;
+    }
+
+    // 繪製關卡中的老鼠與大米
+    function renderGameElements() {
+      const level = levels[currentLevelIndex];
+      
+      kitchenFloor.innerHTML = '';
+      targetFloor.innerHTML = '';
+
+      // 1. 玩家的老鼠
+      level.mice.forEach((color, idx) => {
+        const mouse = createMouseSVG(color, level, idx);
+        kitchenFloor.appendChild(mouse);
+      });
+
+      // 2. 目標大米
+      level.mice.forEach((color, idx) => {
+        const rice = createRiceSVG(color, level, idx);
+        targetFloor.appendChild(rice);
+      });
+
+      // 初始化大米容器樣式：先還原再套用完全正確解
+      targetFloor.style.display = 'flex';
+      targetFloor.style.flexDirection = 'row';
+      targetFloor.style.justifyContent = 'flex-start';
+      targetFloor.style.alignItems = 'flex-start';
+      targetFloor.style.flexWrap = 'nowrap';
+
+      const finalStyles = { ...level.defaultStyles, ...level.correctStyles };
+      Object.keys(finalStyles).forEach(prop => {
+        targetFloor.style[propToCamelCase(prop)] = finalStyles[prop];
+      });
+    }
+
+    function propToCamelCase(prop) {
+      return prop.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    }
+
+    // 套用使用者選擇樣式
+    function applyStyles() {
+      const level = levels[currentLevelIndex];
+
+      // 重設老鼠地板樣式
+      kitchenFloor.style.display = 'flex';
+      kitchenFloor.style.flexDirection = 'row';
+      kitchenFloor.style.justifyContent = 'flex-start';
+      kitchenFloor.style.alignItems = 'flex-start';
+      kitchenFloor.style.flexWrap = 'nowrap';
+
+      // 覆蓋當前答案
+      const activeStyles = { ...level.defaultStyles, ...userAnswers };
+      Object.keys(activeStyles).forEach(prop => {
+        kitchenFloor.style[propToCamelCase(prop)] = activeStyles[prop];
+      });
+
+      // 更新輔助主副軸指示器
+      updateAxes(activeStyles);
+
+      // 進行重疊度檢測
+      setTimeout(checkCollision, 350);
+    }
+
+    // 更新繪製主軸與交錯軸箭頭
+    function updateAxes(styles) {
+      const mainAxis = document.getElementById('main-axis');
+      const crossAxis = document.getElementById('cross-axis');
+      
+      // 如果關卡設定 display: block，或玩家把屬性切成了 block，則隱藏軸線（因為 flex 未啟動）
+      if (!showAxes || styles['display'] === 'block') {
+        mainAxis.style.opacity = '0';
+        crossAxis.style.opacity = '0';
+        return;
+      }
+
+      const dir = styles['flex-direction'] || 'row';
+      const wrap = styles['flex-wrap'] || 'nowrap';
+
+      mainAxis.style.opacity = '0.9';
+      crossAxis.style.opacity = '0.9';
+
+      mainAxis.style.transform = '';
+      crossAxis.style.transform = '';
+      mainAxis.className = 'axis-line absolute flex items-center space-x-2';
+      crossAxis.className = 'axis-line absolute flex items-center space-x-2';
+
+      // 1. 主軸 Main Axis 定位
+      if (dir === 'row') {
+        mainAxis.style.left = '10%';
+        mainAxis.style.right = '10%';
+        mainAxis.style.top = '15px';
+        mainAxis.style.bottom = 'auto';
+        mainAxis.style.width = '80%';
+        mainAxis.style.height = 'auto';
+        document.getElementById('main-axis-arrow').style.transform = 'translateY(-50%)';
+      } 
+      else if (dir === 'row-reverse') {
+        mainAxis.style.left = '10%';
+        mainAxis.style.right = '10%';
+        mainAxis.style.top = '15px';
+        mainAxis.style.bottom = 'auto';
+        mainAxis.style.width = '80%';
+        mainAxis.style.height = 'auto';
+        mainAxis.style.transform = 'scaleX(-1)'; 
+        document.getElementById('main-axis-arrow').style.transform = 'translateY(-50%)';
+      } 
+      else if (dir === 'column') {
+        mainAxis.style.left = '15px';
+        mainAxis.style.top = '10%';
+        mainAxis.style.bottom = '10%';
+        mainAxis.style.right = 'auto';
+        mainAxis.style.width = '80%'; 
+        mainAxis.style.height = 'auto';
+        mainAxis.style.transformOrigin = 'left center';
+        mainAxis.style.transform = 'rotate(90deg) translateY(-50%)';
+        document.getElementById('main-axis-arrow').style.transform = 'translateY(-50%)';
+      } 
+      else if (dir === 'column-reverse') {
+        mainAxis.style.left = '15px';
+        mainAxis.style.top = '10%';
+        mainAxis.style.bottom = '10%';
+        mainAxis.style.right = 'auto';
+        mainAxis.style.width = '80%';
+        mainAxis.style.height = 'auto';
+        mainAxis.style.transformOrigin = 'left center';
+        mainAxis.style.transform = 'rotate(-90deg) scaleX(-1) translateY(-50%)'; 
+        document.getElementById('main-axis-arrow').style.transform = 'translateY(-50%)';
+      }
+
+      // 2. 交錯軸 Cross Axis 定位 (垂直於主軸)
+      if (dir === 'row' || dir === 'row-reverse') {
+        crossAxis.style.left = '25px';
+        crossAxis.style.top = '10%';
+        crossAxis.style.bottom = '10%';
+        crossAxis.style.right = 'auto';
+        crossAxis.style.width = '60%';
+        crossAxis.style.transformOrigin = 'left center';
+        
+        if (wrap === 'wrap-reverse') {
+          crossAxis.style.transform = 'rotate(-90deg) scaleX(-1) translateY(-50%)'; // 向上
+        } else {
+          crossAxis.style.transform = 'rotate(90deg) translateY(-50%)'; // 向下
+        }
+      } 
+      else {
+        crossAxis.style.left = '10%';
+        crossAxis.style.right = '10%';
+        crossAxis.style.top = '25px';
+        crossAxis.style.bottom = 'auto';
+        crossAxis.style.width = '60%';
+        
+        if (wrap === 'wrap-reverse') {
+          crossAxis.style.transform = 'scaleX(-1)'; // 向左
+        } else {
+          crossAxis.style.transform = ''; // 向右
+        }
+      }
+    }
+
+    // 精準碰撞偵測
+    function checkCollision() {
+      const mice = document.querySelectorAll('.mouse-item');
+      const rices = document.querySelectorAll('.target-rice');
+      
+      if (mice.length === 0 || rices.length === 0) return;
+
+      let allMatched = true;
+      const threshold = 15; // 15px 容錯寬高距離
+
+      for (let i = 0; i < mice.length; i++) {
+        const mRect = mice[i].getBoundingClientRect();
+        const rRect = rices[i].getBoundingClientRect();
+
+        const mCenterX = mRect.left + mRect.width / 2;
+        const mCenterY = mRect.top + mRect.height / 2;
+        const rCenterX = rRect.left + rRect.width / 2;
+        const rCenterY = rRect.top + rRect.height / 2;
+
+        const dist = Math.sqrt(Math.pow(mCenterX - rCenterX, 2) + Math.pow(mCenterY - rCenterY, 2));
+
+        if (dist > threshold) {
+          allMatched = false;
+          break;
+        }
+      }
+
+      if (allMatched) {
+        triggerSuccess();
+      }
+    }
+
+    // 通關動畫與彈窗邏輯
+    function triggerSuccess() {
+      if (!successOverlay.classList.contains('pointer-events-none')) return;
+
+      playSuccessSound();
+      playChewSound();
+
+      // 為老鼠加入咀嚼動畫
+      const mice = document.querySelectorAll('.mouse');
+      mice.forEach(m => {
+        m.classList.add('chewing');
+      });
+
+      // 米粒淡出與粒子噴射效果
+      const rices = document.querySelectorAll('.rice');
+      rices.forEach(r => {
+        r.style.transition = 'all 0.4s ease-out';
+        r.style.opacity = '0';
+        r.style.transform = 'scale(0)';
+        
+        const rect = r.getBoundingClientRect();
+        const parentRect = targetFloor.getBoundingClientRect();
+        const x = rect.left - parentRect.left + rect.width / 2;
+        const y = rect.top - parentRect.top + rect.height / 2;
+        createCrumbs(x, y);
+      });
+
+      // 根據關卡調整彈出過關視窗的內容
+      const h3Title = successOverlay.querySelector('h3');
+      const pMessage = document.getElementById('success-message');
+
+      if (currentLevelIndex === levels.length - 1) {
+        // 最後一關 (第 20 關) 的大結局畫面
+        h3Title.textContent = "🏆 完美大通關！";
+        h3Title.className = "text-2xl font-black text-amber-400 mb-2";
+        pMessage.innerHTML = "廚房裡的大米已經被全部吃光光了！你成功通過了所有 20 個 Flexbox 考驗，成為真正的老鼠界排版大師！🐭🌾";
+        nextLevelBtn.innerHTML = `
+          <span>🏆 大米被吃光光！(重新挑戰)</span>
+          <span>🔄</span>
+        `;
+      } else {
+        // 一般關卡
+        h3Title.textContent = "太棒了！老鼠吃飽了！";
+        h3Title.className = "text-2xl font-black text-emerald-400 mb-2";
+        pMessage.textContent = "大米被嚼嚼嚼地一掃而空！你成功掌握了這個屬性！";
+        nextLevelBtn.innerHTML = `
+          <span>前往下一關</span>
+          <span>👉</span>
+        `;
+      }
+
+      // 彈出成功遮罩
+      setTimeout(() => {
+        successOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      }, 750);
+    }
+
+    // 噴射大米碎屑粒子
+    function createCrumbs(x, y) {
+      const parent = targetFloor;
+      for (let i = 0; i < 8; i++) {
+        const crumb = document.createElement('div');
+        crumb.className = 'crumb';
+        crumb.style.left = `${x}px`;
+        crumb.style.top = `${y}px`;
+        const tx = (Math.random() - 0.5) * 60;
+        crumb.style.setProperty('--tx', `${tx}px`);
+        parent.appendChild(crumb);
+        setTimeout(() => crumb.remove(), 600);
+      }
+    }
+
+    // 工具按鈕綁定
+    toggleAxesBtn.addEventListener('click', () => {
+      showAxes = !showAxes;
+      if (showAxes) {
+        axisStatusText.textContent = '開啟';
+        axisStatusText.className = 'font-bold';
+        axisEyeIcon.textContent = '👁️';
+      } else {
+        axisStatusText.textContent = '關閉';
+        axisStatusText.className = 'font-semibold text-gray-400';
+        axisEyeIcon.textContent = '🙈';
+      }
+      playBeep(450, 'sine', 0.05);
+      applyStyles();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      playBeep(250, 'sine', 0.08);
+      loadLevel(currentLevelIndex);
+    });
+
+    nextLevelBtn.addEventListener('click', () => {
+      if (currentLevelIndex < levels.length - 1) {
+        loadLevel(currentLevelIndex + 1);
+      } else {
+        // 如果是最後一關，點擊「重新挑戰」會回到第一關並顯示首頁
+        landingScreen.style.display = 'flex';
+        // 延遲移除 class 確保能發揮 transition 特效
+        setTimeout(() => {
+          landingScreen.classList.remove('opacity-0', 'scale-110', 'pointer-events-none');
+        }, 50);
+        loadLevel(0);
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentLevelIndex > 0) {
+        loadLevel(currentLevelIndex - 1);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentLevelIndex < levels.length - 1) {
+        loadLevel(currentLevelIndex + 1);
+      }
+    });
+
+    // 啟動
+    initLevelSelect();
+    loadLevel(0);
+  </script>
+</body>
+</html>
